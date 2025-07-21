@@ -7,15 +7,9 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 public interface BuyerRepository extends MongoRepository<Buyer, String> {
-    
-    // Basic queries
     List<Buyer> findByOrderHistoryContaining(String orderId);
-    
-    // Favorite farmers queries
     List<Buyer> findByFavoriteFarmersContaining(String farmerId);
     Page<Buyer> findByFavoriteFarmersContaining(String farmerId, Pageable pageable);
-   
-    
-    // Paginated queries
+    Buyer findByUsername(String username);
     Page<Buyer> findAll(Pageable pageable);
 }

@@ -1,4 +1,4 @@
-package com.example.server.controller;
+package com.example.server.controller.RoleCntroller;
 
 import com.example.server.model.Roles.Buyer;
 import com.example.server.service.RolesServices.BuyerService;
@@ -10,18 +10,18 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/buyers")
+
 public class BuyerController {
 
     @Autowired
     private BuyerService buyerService;
 
-    @PostMapping
+    @PostMapping("/auth/registerbuyer")
     public ResponseEntity<Buyer> registerBuyer(@RequestBody Buyer buyer) {
         return ResponseEntity.ok(buyerService.registerBuyer(buyer));
     }
 
-    @GetMapping
+    @GetMapping("/buyer/allbuyers")
     public ResponseEntity<List<Buyer>> getAllBuyers() {
         return ResponseEntity.ok(buyerService.getAllBuyers());
     }
@@ -31,7 +31,7 @@ public class BuyerController {
         return ResponseEntity.ok(buyerService.getBuyerById(id));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/buyer/{id}")
     public ResponseEntity<Buyer> updateBuyerProfile(@PathVariable String id, @RequestBody Buyer buyerDetails) {
         return ResponseEntity.ok(buyerService.updateBuyerProfile(id, buyerDetails));
     }

@@ -1,4 +1,4 @@
-package com.example.server.controller;
+package com.example.server.controller.RoleCntroller;
 
 import com.example.server.model.Roles.SeedSeller;
 import com.example.server.service.RolesServices.SeedSellerService;
