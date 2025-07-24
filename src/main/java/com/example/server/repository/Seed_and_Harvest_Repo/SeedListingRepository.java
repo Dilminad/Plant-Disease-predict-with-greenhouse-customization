@@ -1,4 +1,4 @@
-package com.example.server.repository.SeedRepo;
+package com.example.server.repository.Seed_and_Harvest_Repo;
 
 import java.util.List;
 

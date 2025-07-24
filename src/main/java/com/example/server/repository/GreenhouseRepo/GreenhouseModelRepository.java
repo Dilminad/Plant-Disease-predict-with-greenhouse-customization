@@ -10,4 +10,6 @@ public interface GreenhouseModelRepository extends MongoRepository<GreenhouseMod
     List<GreenhouseModel> findByNameContainingIgnoreCase(String name);
 
     List<GreenhouseModel> findByCompatibleCropsContains(String cropName);
+
+    
 }

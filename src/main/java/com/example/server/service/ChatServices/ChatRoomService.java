@@ -1,63 +1,65 @@
 package com.example.server.service.ChatServices;
 
+import com.example.server.model.Chatroom.ChatRoom;
+import com.example.server.model.Chatroom.ChatRoom.ChatRoomType;
+import com.example.server.repository.ChatRepo.ChatRoomRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.stereotype.Service;
-
-import com.example.server.model.Chatroom.ChatRoom;
-import com.example.server.model.Chatroom.ChatRoom.ChatRoomType;
-import com.example.server.repository.ChatRepo.ChatRoomRepository;
-
 @Service
 public class ChatRoomService {
+
     private final ChatRoomRepository chatRoomRepository;
 
+    @Autowired
     public ChatRoomService(ChatRoomRepository chatRoomRepository) {
         this.chatRoomRepository = chatRoomRepository;
     }
 
-    public ChatRoom createChatRoom(ChatRoom chatRoom) {
-        chatRoom.setCreatedAt(LocalDateTime.now());
-        chatRoom.setLastActivity(LocalDateTime.now());
-        return chatRoomRepository.save(chatRoom);
-    }
-
-    public ChatRoom createPrivateChatRoom(String participantId1, String participantId2) {
+    public ChatRoom createPrivateChatRoom(Set<String> participantIds) {
         ChatRoom chatRoom = new ChatRoom();
-        chatRoom.setParticipantIds(Set.of(participantId1, participantId2));
+        chatRoom.setParticipantIds(participantIds);
         chatRoom.setType(ChatRoomType.PRIVATE);
         chatRoom.setCreatedAt(LocalDateTime.now());
         chatRoom.setLastActivity(LocalDateTime.now());
         return chatRoomRepository.save(chatRoom);
     }
 
-    public List<ChatRoom> getChatRoomsByParticipant(String participantId) {
-        return chatRoomRepository.findByParticipantIdsContains(participantId);
-    }
-
-    public List<ChatRoom> getChatRoomsByType(ChatRoomType type) {
-        return chatRoomRepository.findByType(type);
-    }
-
-    public ChatRoom getPrivateChatRoom(String participantId1, String participantId2) {
-        return chatRoomRepository.findByParticipantIdsContainsAndType(participantId1, participantId2, ChatRoomType.PRIVATE);
-    }
-
-    public ChatRoom updateChatRoom(ChatRoom chatRoom) {
+    public ChatRoom createGroupChatRoom(Set<String> participantIds, String name) {
+        ChatRoom chatRoom = new ChatRoom();
+        chatRoom.setParticipantIds(participantIds);
+        chatRoom.setType(ChatRoomType.GROUP);
+        chatRoom.setName(name);
+        chatRoom.setCreatedAt(LocalDateTime.now());
         chatRoom.setLastActivity(LocalDateTime.now());
         return chatRoomRepository.save(chatRoom);
     }
 
-    public void updateLastMessagePreview(String roomId, String messagePreview) {
-        chatRoomRepository.findById(roomId)
-                .map(room -> {
-                    room.setLastMessagePreview(messagePreview);
-                    room.setLastActivity(LocalDateTime.now());
-                    return chatRoomRepository.save(room);
-                })
-                .orElseThrow(() -> new RuntimeException("Chat room not found with id: " + roomId));
+    public ChatRoom getChatRoomById(String roomId) {
+        return chatRoomRepository.findById(roomId).orElse(null);
+    }
+
+    public List<ChatRoom> getChatRoomsForUser(String userId) {
+        return chatRoomRepository.findByParticipantIdsContains(userId);
+    }
+
+    public ChatRoom findPrivateChatBetweenUsers(String userId1, String userId2) {
+        return chatRoomRepository.findByParticipantIdsContainsAndType(
+                userId1, userId2, ChatRoomType.PRIVATE);
+    }
+
+    public ChatRoom updateLastActivity(String roomId, String lastMessagePreview) {
+        ChatRoom chatRoom = getChatRoomById(roomId);
+        if (chatRoom != null) {
+            chatRoom.setLastActivity(LocalDateTime.now());
+            chatRoom.setLastMessagePreview(lastMessagePreview);
+            return chatRoomRepository.save(chatRoom);
+        }
+        return null;
     }
 
     public void deleteChatRoom(String roomId) {

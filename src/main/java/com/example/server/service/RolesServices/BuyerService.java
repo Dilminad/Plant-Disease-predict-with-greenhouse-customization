@@ -3,6 +3,7 @@ package com.example.server.service.RolesServices;
 import com.example.server.model.Roles.Buyer;
 import com.example.server.repository.RolesRepo.BuyerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,12 +11,18 @@ import java.util.List;
 @Service
 public class BuyerService {
 
+    private final BuyerRepository buyerRepository;
+    private final PasswordEncoder passwordEncoder;
+
     @Autowired
-    private BuyerRepository buyerRepository;
+    public BuyerService(BuyerRepository buyerRepository, PasswordEncoder passwordEncoder) {
+        this.buyerRepository = buyerRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     // CREATE
     public Buyer registerBuyer(Buyer buyer) {
-        // Could add validation for buyer-specific rules
+        buyer.setPassword(passwordEncoder.encode(buyer.getPassword()));
         return buyerRepository.save(buyer);
     }
 
@@ -24,9 +31,10 @@ public class BuyerService {
         return buyerRepository.findAll();
     }
 
+    // Add this missing method
     public Buyer getBuyerById(String id) {
         return buyerRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Buyer not found"));
+                .orElseThrow(() -> new RuntimeException("Buyer not found with id: " + id));
     }
 
     // UPDATE
@@ -37,7 +45,11 @@ public class BuyerService {
         buyer.setPhone(buyerDetails.getPhone());
         buyer.setStreet(buyerDetails.getStreet());
         buyer.setCity(buyerDetails.getCity());
-        // Note: Don't update security-sensitive fields here
+        
+        // Update password if provided
+        if (buyerDetails.getPassword() != null && !buyerDetails.getPassword().isEmpty()) {
+            buyer.setPassword(passwordEncoder.encode(buyerDetails.getPassword()));
+        }
         
         return buyerRepository.save(buyer);
     }
@@ -78,10 +90,9 @@ public class BuyerService {
         return buyerRepository.findByFavoriteFarmersContaining(farmerId);
     }
 
-    // Useful for analytics
-     public List<Buyer> getActiveBuyers(int minimumOrders) {
+    public List<Buyer> getActiveBuyers(int minimumOrders) {
         return buyerRepository.findAll().stream()
-            .filter(b -> b.getOrderHistory() != null && b.getOrderHistory().size() >= minimumOrders)
-            .toList();
+                .filter(b -> b.getOrderHistory() != null && b.getOrderHistory().size() >= minimumOrders)
+                .toList();
     }
 }

@@ -3,17 +3,25 @@ package com.example.server.service.RolesServices;
 import com.example.server.model.Roles.Farmer;
 import com.example.server.repository.RolesRepo.FarmerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 public class FarmerService {
+    private final FarmerRepository farmerRepository;
+    private final PasswordEncoder passwordEncoder;
+
     @Autowired
-    private FarmerRepository farmerRepository;
+    public FarmerService(FarmerRepository farmerRepository, PasswordEncoder passwordEncoder) {
+        this.farmerRepository = farmerRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     // CREATE
     public Farmer createFarmer(Farmer farmer) {
+        farmer.setPassword(passwordEncoder.encode(farmer.getPassword()));
         return farmerRepository.save(farmer);
     }
 
@@ -24,7 +32,7 @@ public class FarmerService {
 
     public Farmer getFarmerById(String id) {
         return farmerRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Farmer not found"));
+            .orElseThrow(() -> new RuntimeException("Farmer not found with id: " + id));
     }
 
     // UPDATE
@@ -36,6 +44,11 @@ public class FarmerService {
         farmer.setFarmSize(farmerDetails.getFarmSize());
         farmer.setGreenhouseIds(farmerDetails.getGreenhouseIds());
         farmer.setHarvestIds(farmerDetails.getHarvestIds());
+        
+        // Update password if provided
+        if (farmerDetails.getPassword() != null && !farmerDetails.getPassword().isEmpty()) {
+            farmer.setPassword(passwordEncoder.encode(farmerDetails.getPassword()));
+        }
         
         return farmerRepository.save(farmer);
     }

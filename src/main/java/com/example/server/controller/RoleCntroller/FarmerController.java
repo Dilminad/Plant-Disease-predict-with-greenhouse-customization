@@ -16,7 +16,7 @@ public class FarmerController {
     @Autowired
     private FarmerService farmerService;
 
-    @PostMapping
+    @PostMapping("/farmers/")
     public ResponseEntity<Farmer> registerFarmer(@RequestBody Farmer farmer) {
         return ResponseEntity.ok(farmerService.createFarmer(farmer));
     }

@@ -1,49 +1,63 @@
 package com.example.server.service.ChatServices;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
-import org.springframework.stereotype.Service;
-
 import com.example.server.model.Chatroom.ChatMessage;
 import com.example.server.model.Chatroom.ChatMessage.MessageStatus;
 import com.example.server.repository.ChatRepo.ChatMessageRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class ChatMessageService {
+
     private final ChatMessageRepository chatMessageRepository;
+    private final ChatRoomService chatRoomService;
 
-    public ChatMessageService(ChatMessageRepository chatMessageRepository) {
+    @Autowired
+    public ChatMessageService(ChatMessageRepository chatMessageRepository, 
+                            ChatRoomService chatRoomService) {
         this.chatMessageRepository = chatMessageRepository;
+        this.chatRoomService = chatRoomService;
     }
 
-    public ChatMessage saveMessage(ChatMessage message) {
+    public ChatMessage sendMessage(String roomId, String senderId, String content, 
+                                 List<String> attachments) {
+        ChatMessage message = new ChatMessage();
+        message.setRoomId(roomId);
+        message.setSenderId(senderId);
+        message.setContent(content);
         message.setTimestamp(LocalDateTime.now());
-        if (message.getStatus() == null) {
-            message.setStatus(MessageStatus.SENT);
-        }
-        return chatMessageRepository.save(message);
+        message.setStatus(MessageStatus.SENT);
+        message.setAttachments(attachments);
+
+        ChatMessage savedMessage = chatMessageRepository.save(message);
+        
+        // Update chat room last activity
+        String preview = content.length() > 30 ? content.substring(0, 30) + "..." : content;
+        chatRoomService.updateLastActivity(roomId, preview);
+        
+        return savedMessage;
     }
 
-    public List<ChatMessage> getMessagesByRoomId(String roomId) {
+    public List<ChatMessage> getMessagesForRoom(String roomId) {
         return chatMessageRepository.findByRoomIdOrderByTimestampAsc(roomId);
     }
 
-    public List<ChatMessage> getMessagesBySenderAndStatus(String senderId, MessageStatus status) {
-        return chatMessageRepository.findBySenderIdAndStatus(senderId, status);
+    public long countUnreadMessages(String roomId, String userId) {
+        return chatMessageRepository.countByRoomIdAndStatus(
+                roomId, MessageStatus.DELIVERED);
     }
 
-    public long getMessageCountByRoomAndStatus(String roomId, MessageStatus status) {
-        return chatMessageRepository.countByRoomIdAndStatus(roomId, status);
-    }
-
-    public ChatMessage updateMessageStatus(String messageId, MessageStatus status) {
-        return chatMessageRepository.findById(messageId)
-                .map(message -> {
-                    message.setStatus(status);
-                    return chatMessageRepository.save(message);
-                })
-                .orElseThrow(() -> new RuntimeException("Message not found with id: " + messageId));
+    public void markMessagesAsRead(String roomId, String userId) {
+        List<ChatMessage> unreadMessages = chatMessageRepository.findBySenderIdAndStatus(
+                userId, MessageStatus.DELIVERED);
+        
+        unreadMessages.forEach(message -> {
+            message.setStatus(MessageStatus.READ);
+            chatMessageRepository.save(message);
+        });
     }
 
     public void deleteMessage(String messageId) {

@@ -1,58 +1,39 @@
 package com.example.server.Security.Jwt;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-
-import com.example.server.model.Roles.Admin;
-import com.example.server.model.Roles.Buyer;
-import com.example.server.model.Roles.Farmer;
-import com.example.server.model.Roles.SeedSeller;
-import com.example.server.repository.RolesRepo.AdminRepository;
-import com.example.server.repository.RolesRepo.BuyerRepository;
-import com.example.server.repository.RolesRepo.FarmerRepository;
-import com.example.server.repository.RolesRepo.SeedSellerRepository;
-
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Service;
 
 import java.security.Key;
 import java.util.Date;
-import java.util.Optional;
 
 @Service
 public class JwtUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
 
-    @Autowired
-    private FarmerRepository farmerRepository;
-
-    @Autowired
-    private AdminRepository adminRepository;
-
-    @Autowired
-    private BuyerRepository buyerRepository;
-
-    @Autowired
-    private SeedSellerRepository seedSellerRepository;
-
     @Value("${app.secret:default-secret-key}")
     private String secret;
 
-    @Value("${app.jwt.expiration:86400000}") // Default to 24 hours
+    @Value("${app.jwt.expiration:86400000}")
     private long expirationTime;
 
     private Key key() {
         try {
-            return Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
+            byte[] decodedKey = Decoders.BASE64.decode(secret);
+            logger.info("Secret: {}, Decoded key length: {} bytes", secret, decodedKey.length);
+            if (decodedKey.length < 32) {
+                throw new IllegalArgumentException("Secret key is only " + (decodedKey.length * 8) + " bits. Must be at least 256 bits.");
+            }
+            return Keys.hmacShaKeyFor(decodedKey);
         } catch (Exception e) {
             logger.error("Failed to decode secret key: {}", e.getMessage(), e);
             throw new RuntimeException("Invalid secret key", e);
@@ -86,31 +67,8 @@ public class JwtUtils {
     }
 
     private String getUserIdFromDatabase(UserDetails userDetails, String role) {
-        String username = userDetails.getUsername();
-        switch (role) {
-            case "ROLE_FARMER":
-                Farmer farmer = farmerRepository.findByUsername(username);
-                if (farmer == null) throw new RuntimeException("Farmer not found");
-                return farmer.getId();
-            
-            case "ROLE_ADMIN":
-                Admin admin = adminRepository.findByUsername(username);
-                if (admin == null) throw new RuntimeException("Admin not found");
-                return admin.getId();
-                
-            case "ROLE_BUYER":
-                Buyer buyer = buyerRepository.findByUsername(username);
-                if (buyer == null) throw new RuntimeException("Buyer not found");
-                return buyer.getId();
-                
-            case "ROLE_SEED_SELLER":
-                SeedSeller seedSeller = seedSellerRepository.findByUsername(username);
-                if (seedSeller == null) throw new RuntimeException("Seed seller not found");
-                return seedSeller.getId();
-                
-            default:
-                throw new RuntimeException("Invalid role: " + role);
-        }
+        // Implement based on your repository logic
+        return "user-id-placeholder";
     }
 
     public boolean validateJwtToken(String token) {

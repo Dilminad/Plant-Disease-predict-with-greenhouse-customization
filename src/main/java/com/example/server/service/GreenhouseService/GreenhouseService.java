@@ -17,10 +17,10 @@ import com.example.server.repository.GreenhouseRepo.GreenhouseMonitoringDataRepo
 public class GreenhouseService {
     @Autowired
     private GreenhouseModelRepository greenhouseModelRepository;
-    
+
     @Autowired
     private GreenhouseInstallationRepository greenhouseInstallationRepository;
-    
+
     @Autowired
     private GreenhouseMonitoringDataRepository monitoringDataRepository; // Fix the type here
 
@@ -45,7 +45,16 @@ public class GreenhouseService {
         return monitoringDataRepository.save(data);
     }
 
-    public List<GreenhouseMonitoringData> getInstallationData(String installationId, LocalDateTime start, LocalDateTime end) {
+    public List<GreenhouseMonitoringData> getInstallationData(String installationId, LocalDateTime start,
+            LocalDateTime end) {
         return monitoringDataRepository.findByInstallationIdAndTimestampBetween(installationId, start, end);
+    }
+
+    public List<GreenhouseModel> getGreenhouseModelsByName(String name) {
+        return greenhouseModelRepository.findByNameContainingIgnoreCase(name);
+    }
+
+    public List<GreenhouseModel> getGreenhouseModelsByCrop(String cropName) {
+        return greenhouseModelRepository.findByCompatibleCropsContains(cropName);
     }
 }

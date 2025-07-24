@@ -20,7 +20,7 @@ public class AdminController {
         this.adminService = adminService;
     }
 
-    @PostMapping("/admin/createAdmin")
+    @PostMapping("/auth/createAdmin")
     public ResponseEntity<Admin> createAdmin(@RequestBody Admin admin) {
         Admin createdAdmin = adminService.createAdmin(admin);
         return ResponseEntity.ok(createdAdmin);
