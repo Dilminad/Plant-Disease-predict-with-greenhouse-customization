@@ -1,6 +1,7 @@
 package com.example.server.repository.RolesRepo;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
@@ -12,5 +13,6 @@ import com.example.server.model.Roles.Buyer;
 public interface AdminRepository extends MongoRepository<Admin, String> {
     List<Admin> findByDepartment(String department);
     List<Admin> findByPermissionsContaining(String permission);
-    Admin findByUsername(String username);  // Changed from Buyer to Admin
+    Optional<Admin> findByUsername(String username);
+    
 }

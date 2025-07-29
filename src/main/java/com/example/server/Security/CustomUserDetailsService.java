@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collection;
-
+import java.util.Optional;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
@@ -42,26 +42,30 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         // Check Admin
-        Admin admin = adminRepository.findByUsername(username);
-        if (admin != null) {
+        Optional<Admin> adminOpt = adminRepository.findByUsername(username);
+        if (adminOpt.isPresent()) {
+            Admin admin = adminOpt.get();
             return createUserDetails(admin.getUsername(), admin.getPassword(), "ADMIN");
         }
 
         // Check Buyer
-        Buyer buyer = buyerRepository.findByUsername(username);
-        if (buyer != null) {
+        Optional<Buyer> buyerOpt = buyerRepository.findByUsername(username);
+        if (buyerOpt.isPresent()) {
+            Buyer buyer = buyerOpt.get();
             return createUserDetails(buyer.getUsername(), buyer.getPassword(), "BUYER");
         }
 
         // Check Farmer
-        Farmer farmer = farmerRepository.findByUsername(username);
-        if (farmer != null) {
+        Optional<Farmer> farmerOpt = farmerRepository.findByUsername(username);
+        if (farmerOpt.isPresent()) {
+            Farmer farmer = farmerOpt.get();
             return createUserDetails(farmer.getUsername(), farmer.getPassword(), "FARMER");
         }
 
         // Check SeedSeller
-        SeedSeller seedSeller = seedSellerRepository.findByUsername(username);
-        if (seedSeller != null) {
+        Optional<SeedSeller> seedSellerOpt = seedSellerRepository.findByUsername(username);
+        if (seedSellerOpt.isPresent()) {
+            SeedSeller seedSeller = seedSellerOpt.get();
             return createUserDetails(seedSeller.getUsername(), seedSeller.getPassword(), "SEED_SELLER");
         }
 

@@ -10,28 +10,28 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/seed-sellers")
+
 public class SeedSellerController {
 
     @Autowired
     private SeedSellerService seedSellerService;
 
-    @PostMapping
+    @PostMapping("/auth/registerseedseller")
     public ResponseEntity<SeedSeller> registerSeedSeller(@RequestBody SeedSeller seedSeller) {
         return ResponseEntity.ok(seedSellerService.registerSeedSeller(seedSeller));
     }
 
-    @GetMapping
+    @GetMapping("/admin/allsellers")
     public ResponseEntity<List<SeedSeller>> getAllSeedSellers() {
         return ResponseEntity.ok(seedSellerService.getAllSeedSellers());
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/getseller/{id}")
     public ResponseEntity<SeedSeller> getSeedSellerById(@PathVariable String id) {
         return ResponseEntity.ok(seedSellerService.getSeedSellerById(id));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/buyer/update/{id}")
     public ResponseEntity<SeedSeller> updateSeedSeller(@PathVariable String id, @RequestBody SeedSeller sellerDetails) {
         return ResponseEntity.ok(seedSellerService.updateSeedSeller(id, sellerDetails));
     }

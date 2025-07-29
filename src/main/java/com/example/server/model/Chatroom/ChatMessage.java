@@ -24,6 +24,8 @@ public class ChatMessage {
     private LocalDateTime timestamp;
     private MessageStatus status;
     private List<String> attachments;
+     private boolean edited;      // New field to track edits
+    private boolean deleted; 
     
     public enum MessageStatus { SENT, DELIVERED, READ }
 

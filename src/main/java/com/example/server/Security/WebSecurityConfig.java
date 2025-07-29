@@ -10,6 +10,7 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -20,12 +21,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import com.example.server.Security.Jwt.AuthEntryPoint;
 import com.example.server.Security.Jwt.AuthTokenFilter;
 
-
-
-
-
-
 @Configuration
+@EnableWebSecurity
 @EnableMethodSecurity
 public class WebSecurityConfig {
     
@@ -36,26 +33,17 @@ public class WebSecurityConfig {
     private AuthEntryPoint unauthorizedHandler;
 
     @Bean
-    public UserDetailsService userDetailsService() {
-
-        return userDetailsService;
-    }
-
-    @Bean
-    public AuthTokenFilter authenticAuthTokenFilter(){
-
+    public AuthTokenFilter authenticAuthTokenFilter() {
         return new AuthTokenFilter();
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-
         return new BCryptPasswordEncoder();
     }
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
-
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder());
@@ -63,9 +51,8 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception{
-
-         return authConfig.getAuthenticationManager();
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+        return authConfig.getAuthenticationManager();
     }
 
     @Bean
@@ -73,22 +60,24 @@ public class WebSecurityConfig {
         http
             .cors(cors -> cors.configurationSource(request -> {
                 var corsConfig = new org.springframework.web.cors.CorsConfiguration();
-                corsConfig.setAllowedOrigins(List.of("http://localhost:5173")); // Frontend URL
+                corsConfig.setAllowedOrigins(List.of("http://localhost:5173"));
                 corsConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                 corsConfig.setAllowedHeaders(List.of("*"));
+                corsConfig.setAllowCredentials(true);
                 return corsConfig;
             }))
             .csrf(csrf -> csrf.disable())
             .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth.requestMatchers("/auth/**").permitAll()
-                .anyRequest().authenticated());
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("/ws/**").permitAll() // WebSocket endpoint
+                .anyRequest().authenticated()
+            );
     
         http.authenticationProvider(authenticationProvider());
         http.addFilterBefore(authenticAuthTokenFilter(), UsernamePasswordAuthenticationFilter.class);
     
         return http.build();
     }
-    
 }
-

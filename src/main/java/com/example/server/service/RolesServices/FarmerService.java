@@ -39,19 +39,32 @@ public class FarmerService {
     public Farmer updateFarmer(String id, Farmer farmerDetails) {
         Farmer farmer = getFarmerById(id);
         
-        // Update farmer-specific fields
-        farmer.setFarmLocation(farmerDetails.getFarmLocation());
-        farmer.setFarmSize(farmerDetails.getFarmSize());
-        farmer.setGreenhouseIds(farmerDetails.getGreenhouseIds());
-        farmer.setHarvestIds(farmerDetails.getHarvestIds());
-        
-        // Update password if provided
-        if (farmerDetails.getPassword() != null && !farmerDetails.getPassword().isEmpty()) {
-            farmer.setPassword(passwordEncoder.encode(farmerDetails.getPassword()));
-        }
-        
-        return farmerRepository.save(farmer);
+       // Update inherited fields from User
+    farmer.setUsername(farmerDetails.getUsername());
+    farmer.setFirstname(farmerDetails.getFirstname());
+    farmer.setLastname(farmerDetails.getLastname());
+    farmer.setEmail(farmerDetails.getEmail());
+    farmer.setPhone(farmerDetails.getPhone());
+    farmer.setStreet(farmerDetails.getStreet());
+    farmer.setCity(farmerDetails.getCity());
+    farmer.setState(farmerDetails.getState());
+    farmer.setZipCode(farmerDetails.getZipCode());
+    farmer.setCountry(farmerDetails.getCountry());
+    farmer.setProfileImageUrl(farmerDetails.getProfileImageUrl());
+    
+    // Update farmer-specific fields
+    farmer.setFarmLocation(farmerDetails.getFarmLocation());
+    farmer.setFarmSize(farmerDetails.getFarmSize());
+    farmer.setGreenhouseIds(farmerDetails.getGreenhouseIds());
+    farmer.setHarvestIds(farmerDetails.getHarvestIds());
+    
+    // Update password if provided
+    if (farmerDetails.getPassword() != null && !farmerDetails.getPassword().isEmpty()) {
+        farmer.setPassword(passwordEncoder.encode(farmerDetails.getPassword()));
     }
+    
+    return farmerRepository.save(farmer);
+}
 
     // DELETE
     public void deleteFarmer(String id) {

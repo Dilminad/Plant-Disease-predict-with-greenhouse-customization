@@ -22,21 +22,22 @@ public class Farmer extends User {
     public Farmer(String username, String password, String email, String phone,
                  String street, String city, String state, String zipCode, String country,
                  String farmLocation, double farmSize, List<String> greenhouseIds, List<String> harvestIds) {
-        this.username = username;
-        this.password = password;
-        this.email = email;
-        this.phone = phone;
-        this.street = street;
-        this.city = city;
-        this.state = state;
-        this.zipCode = zipCode;
-        this.country = country;
-        this.farmLocation = farmLocation;
-        this.farmSize = farmSize;
-        this.greenhouseIds = greenhouseIds;
-        this.harvestIds = harvestIds;
-    }
-
+       this.username = username;
+    this.password = password;
+    this.firstname = firstname;
+    this.lastname = lastname;
+    this.email = email;
+    this.phone = phone;
+    this.street = street;
+    this.city = city;
+    this.state = state;
+    this.zipCode = zipCode;
+    this.country = country;
+    this.farmLocation = farmLocation;
+    this.farmSize = farmSize;
+    this.greenhouseIds = greenhouseIds;
+    this.harvestIds = harvestIds;
+}
     @Override
     public String getRole() {
         return "FARMER";

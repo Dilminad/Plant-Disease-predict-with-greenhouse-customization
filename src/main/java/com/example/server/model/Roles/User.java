@@ -15,6 +15,8 @@ public abstract class User {
     protected String id;
     protected String username;
     protected String password;
+    protected String firstname;
+    protected String lastname;
     protected String email;
     protected String phone;
     protected boolean active = true;

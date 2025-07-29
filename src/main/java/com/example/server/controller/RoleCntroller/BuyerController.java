@@ -26,7 +26,7 @@ public class BuyerController {
         return ResponseEntity.ok(buyerService.getAllBuyers());
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/getbuyer/{id}")
     public ResponseEntity<Buyer> getBuyerById(@PathVariable String id) {
         return ResponseEntity.ok(buyerService.getBuyerById(id));
     }
@@ -67,7 +67,7 @@ public class BuyerController {
         return ResponseEntity.ok(buyerService.getActiveBuyers(minOrders));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/admin/deletebuyer/{id}")
     public ResponseEntity<Void> deleteBuyer(@PathVariable String id) {
         buyerService.deleteBuyer(id);
         return ResponseEntity.noContent().build();

@@ -1,11 +1,16 @@
 package com.example.server.Security.Jwt;
 
+import com.example.server.repository.RolesRepo.FarmerRepository;
+import com.example.server.repository.RolesRepo.BuyerRepository;
+import com.example.server.repository.RolesRepo.AdminRepository;
+import com.example.server.repository.RolesRepo.SeedSellerRepository;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -14,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.Optional;
 
 @Service
 public class JwtUtils {
@@ -25,6 +31,18 @@ public class JwtUtils {
 
     @Value("${app.jwt.expiration:86400000}")
     private long expirationTime;
+
+    @Autowired
+    private FarmerRepository farmerRepository;
+    
+    @Autowired
+    private BuyerRepository buyerRepository;
+    
+    @Autowired
+    private AdminRepository adminRepository;
+    
+    @Autowired
+    private SeedSellerRepository seedSellerRepository;
 
     private Key key() {
         try {
@@ -67,8 +85,29 @@ public class JwtUtils {
     }
 
     private String getUserIdFromDatabase(UserDetails userDetails, String role) {
-        // Implement based on your repository logic
-        return "user-id-placeholder";
+        String username = userDetails.getUsername();
+        String cleanRole = role.replace("ROLE_", "");
+
+        try {
+            return switch (cleanRole) {
+                case "FARMER" -> farmerRepository.findByUsername(username)
+                        .map(f -> f.getId().toString())
+                        .orElseThrow(() -> new RuntimeException("Farmer not found"));
+                case "BUYER" -> buyerRepository.findByUsername(username)
+                        .map(b -> b.getId().toString())
+                        .orElseThrow(() -> new RuntimeException("Buyer not found"));
+                case "ADMIN" -> adminRepository.findByUsername(username)
+                        .map(a -> a.getId().toString())
+                        .orElseThrow(() -> new RuntimeException("Admin not found"));
+                case "SEED_SELLER" -> seedSellerRepository.findByUsername(username)
+                        .map(s -> s.getId().toString())
+                        .orElseThrow(() -> new RuntimeException("Seed seller not found"));
+                default -> throw new IllegalArgumentException("Unknown role: " + cleanRole);
+            };
+        } catch (Exception e) {
+            logger.error("Failed to get user ID for {}: {}", username, e.getMessage());
+            throw new RuntimeException("Failed to retrieve user ID", e);
+        }
     }
 
     public boolean validateJwtToken(String token) {
