@@ -3,6 +3,7 @@ package com.example.server.service.RolesServices;
 import com.example.server.model.Roles.SeedSeller;
 import com.example.server.repository.RolesRepo.SeedSellerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,21 +11,25 @@ import java.util.List;
 @Service
 public class SeedSellerService {
 
-    @Autowired
-    private SeedSellerRepository seedSellerRepository;
+    private final SeedSellerRepository seedSellerRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    // Get sellers with a specific seed (assumes SeedSeller has a seeds field)
+    @Autowired
+    public SeedSellerService(SeedSellerRepository seedSellerRepository, PasswordEncoder passwordEncoder) {
+        this.seedSellerRepository = seedSellerRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
+
     public List<SeedSeller> getSellersWithSeed(String seedId) {
         return seedSellerRepository.findBySeedsContaining(seedId);
     }
 
-    // Get premium sellers based on minimum rating and years in business
     public List<SeedSeller> getPremiumSellers(double minRating, int minYears) {
         return seedSellerRepository.findBySellerRatingGreaterThanEqualAndYearsInBusinessGreaterThanEqual(minRating, minYears);
     }
 
-    // Other methods referenced in the controller (for completeness)
     public SeedSeller registerSeedSeller(SeedSeller seedSeller) {
+        seedSeller.setPassword(passwordEncoder.encode(seedSeller.getPassword()));
         return seedSellerRepository.save(seedSeller);
     }
 
@@ -39,9 +44,23 @@ public class SeedSellerService {
 
     public SeedSeller updateSeedSeller(String id, SeedSeller sellerDetails) {
         SeedSeller seedSeller = getSeedSellerById(id);
+        seedSeller.setUsername(sellerDetails.getUsername());
+        seedSeller.setFirstname(sellerDetails.getFirstname());
+        seedSeller.setLastname(sellerDetails.getLastname());
+        seedSeller.setEmail(sellerDetails.getEmail());
+        seedSeller.setPhone(sellerDetails.getPhone());
+        seedSeller.setStreet(sellerDetails.getStreet());
+        seedSeller.setCity(sellerDetails.getCity());
+        seedSeller.setState(sellerDetails.getState());
+        seedSeller.setZipCode(sellerDetails.getZipCode());
+        seedSeller.setCountry(sellerDetails.getCountry());
+        seedSeller.setProfileImageUrl(sellerDetails.getProfileImageUrl());
         seedSeller.setBusinessLicense(sellerDetails.getBusinessLicense());
         seedSeller.setSellerRating(sellerDetails.getSellerRating());
         seedSeller.setYearsInBusiness(sellerDetails.getYearsInBusiness());
+        if (sellerDetails.getPassword() != null && !sellerDetails.getPassword().isEmpty()) {
+            seedSeller.setPassword(passwordEncoder.encode(sellerDetails.getPassword()));
+        }
         return seedSellerRepository.save(seedSeller);
     }
 

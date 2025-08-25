@@ -20,7 +20,6 @@ public class Harvest {
     @Id
     private String id;
     private String farmerId;
-    private String greenhouseId;
     private String productName;
     private String description;
     private double quantityAvailable;
@@ -30,7 +29,8 @@ public class Harvest {
     private LocalDate expiryDate;
     private OrganicStatus organicStatus;
     private List<String> certifications;
-    private String imageUrl;
+    private List<String> imageUrls;
+
     
     public enum OrganicStatus {
         CERTIFIED_ORGANIC, NON_ORGANIC, TRANSITIONAL

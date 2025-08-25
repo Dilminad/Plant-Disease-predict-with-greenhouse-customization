@@ -7,10 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
-
+@CrossOrigin(origins = "*")
 public class FarmerController {
 
     @Autowired
@@ -30,11 +31,14 @@ public class FarmerController {
     public ResponseEntity<Farmer> getFarmerById(@PathVariable String id) {
         return ResponseEntity.ok(farmerService.getFarmerById(id));
     }
-
-    @PutMapping("/farmer/update/{id}")
-    public ResponseEntity<Farmer> updateFarmer(@PathVariable String id, @RequestBody Farmer farmerDetails) {
-        return ResponseEntity.ok(farmerService.updateFarmer(id, farmerDetails));
-    }
+@PostMapping("/farmer/update/{id}")
+public ResponseEntity<Farmer> updateFarmer(@PathVariable String id, 
+                                         @RequestBody Farmer farmerDetails,
+                                         Principal principal) {
+    // Add authentication check - ensure the user is updating their own profile
+    Farmer updatedFarmer = farmerService.updateFarmer(id, farmerDetails);
+    return ResponseEntity.ok(updatedFarmer);
+}
 
     @GetMapping("/location/{location}")
     public ResponseEntity<List<Farmer>> getFarmersByLocation(@PathVariable String location) {

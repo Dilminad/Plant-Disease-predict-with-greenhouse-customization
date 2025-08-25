@@ -1,94 +1,93 @@
 package com.example.server.controller.GreenhouseControllers;
 
-import com.example.server.model.GreenhouseModels.GreenhouseInstallation;
 import com.example.server.model.GreenhouseModels.GreenhouseModel;
-import com.example.server.model.GreenhouseModels.GreenhouseMonitoringData;
 import com.example.server.service.GreenhouseService.GreenhouseService;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/greenhouses")
+
 public class GreenhouseController {
 
-    private final GreenhouseService greenhouseService;
-
     @Autowired
-    public GreenhouseController(GreenhouseService greenhouseService) {
-        this.greenhouseService = greenhouseService;
+    private GreenhouseService greenhouseService;
+
+    // Create a new greenhouse
+   @PostMapping("/admin/addgreenhouse")
+    public ResponseEntity<GreenhouseModel> createGreenhouse(@Valid @RequestBody GreenhouseModel greenhouse) {
+        GreenhouseModel created = greenhouseService.createGreenhouse(greenhouse);
+        return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
-    // Greenhouse Model Endpoints
-    @GetMapping("/models")
-    public ResponseEntity<List<GreenhouseModel>> getAllGreenhouseModels() {
-        List<GreenhouseModel> models = greenhouseService.getAllGreenhouseModels();
-        return ResponseEntity.ok(models);
+    // Get all greenhouses
+    @GetMapping("/allgreenhouses")
+    public ResponseEntity<List<GreenhouseModel>> getAllGreenhouses() {
+        List<GreenhouseModel> greenhouses = greenhouseService.getAllGreenhouses();
+        return new ResponseEntity<>(greenhouses, HttpStatus.OK);
     }
 
-    @GetMapping("/models/{id}")
-    public ResponseEntity<GreenhouseModel> getGreenhouseModelById(@PathVariable String id) {
-        GreenhouseModel model = greenhouseService.getGreenhouseModelById(id);
-        return model != null ? ResponseEntity.ok(model) : ResponseEntity.notFound().build();
+    // Get greenhouse by ID
+    @GetMapping("/greenhouse/{id}")
+    public ResponseEntity<GreenhouseModel> getGreenhouseById(@PathVariable String id) {
+        Optional<GreenhouseModel> greenhouse = greenhouseService.getGreenhouseById(id);
+        return greenhouse.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    @GetMapping("/models/search")
-    public ResponseEntity<List<GreenhouseModel>> searchGreenhouseModels(
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String crop) {
-        
-        if (name != null && crop != null) {
-            // Implement combined search logic if needed
-            return ResponseEntity.badRequest().build();
-        } else if (name != null) {
-            return ResponseEntity.ok(greenhouseService.getGreenhouseModelsByName(name));
-        } else if (crop != null) {
-            return ResponseEntity.ok(greenhouseService.getGreenhouseModelsByCrop(crop));
-        } else {
-            return ResponseEntity.badRequest().build();
-        }
+    // Update a greenhouse
+    @PutMapping("/admin/updategreenhouse/{id}")
+    public ResponseEntity<GreenhouseModel> updateGreenhouse(@PathVariable String id, @Valid @RequestBody GreenhouseModel greenhouse) {
+        GreenhouseModel updated = greenhouseService.updateGreenhouse(id, greenhouse);
+        return new ResponseEntity<>(updated, HttpStatus.OK);
     }
 
-    // Greenhouse Installation Endpoints
-    @PostMapping("/installations")
-    public ResponseEntity<GreenhouseInstallation> createInstallation(
-            @RequestBody GreenhouseInstallation installation) {
-        GreenhouseInstallation created = greenhouseService.createInstallation(installation);
-        return ResponseEntity.ok(created);
+    // Delete a greenhouse
+    @DeleteMapping("/admin/delete/{id}")
+    public ResponseEntity<Void> deleteGreenhouse(@PathVariable String id) {
+        greenhouseService.deleteGreenhouse(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @GetMapping("/installations/farmer/{farmerId}")
-    public ResponseEntity<List<GreenhouseInstallation>> getFarmerInstallations(
-            @PathVariable String farmerId) {
-        List<GreenhouseInstallation> installations = greenhouseService.getFarmerInstallations(farmerId);
-        return ResponseEntity.ok(installations);
+    // Search by name
+    @GetMapping("/search")
+    public ResponseEntity<List<GreenhouseModel>> searchByName(@RequestParam String name) {
+        List<GreenhouseModel> greenhouses = greenhouseService.searchByName(name);
+        return new ResponseEntity<>(greenhouses, HttpStatus.OK);
     }
 
-    // Monitoring Data Endpoints
-    @PostMapping("/monitoring")
-    public ResponseEntity<GreenhouseMonitoringData> addMonitoringData(
-            @RequestBody GreenhouseMonitoringData data) {
-        GreenhouseMonitoringData savedData = greenhouseService.addMonitoringData(data);
-        return ResponseEntity.ok(savedData);
+    // Filter by price range
+    @GetMapping("/filter/price")
+    public ResponseEntity<List<GreenhouseModel>> filterByPriceRange(
+            @RequestParam double minPrice,
+            @RequestParam double maxPrice) {
+        List<GreenhouseModel> greenhouses = greenhouseService.filterByPriceRange(minPrice, maxPrice);
+        return new ResponseEntity<>(greenhouses, HttpStatus.OK);
     }
 
-    @GetMapping("/monitoring/{installationId}")
-    public ResponseEntity<List<GreenhouseMonitoringData>> getInstallationData(
-            @PathVariable String installationId,
-            @RequestParam(required = false) LocalDateTime start,
-            @RequestParam(required = false) LocalDateTime end) {
-        
-        if (start == null || end == null) {
-            // Return recent data if no time range is specified
-            end = LocalDateTime.now();
-            start = end.minusDays(1); // Default to last 24 hours
-        }
-        
-        List<GreenhouseMonitoringData> data = 
-            greenhouseService.getInstallationData(installationId, start, end);
-        return ResponseEntity.ok(data);
+    // Filter by material
+    @GetMapping("/filter/material")
+    public ResponseEntity<List<GreenhouseModel>> filterByMaterial(@RequestParam String material) {
+        List<GreenhouseModel> greenhouses = greenhouseService.filterByMaterial(material);
+        return new ResponseEntity<>(greenhouses, HttpStatus.OK);
+    }
+
+    // Filter by compatible crop
+    @GetMapping("/filter/crop")
+    public ResponseEntity<List<GreenhouseModel>> filterByCompatibleCrop(@RequestParam String crop) {
+        List<GreenhouseModel> greenhouses = greenhouseService.filterByCompatibleCrop(crop);
+        return new ResponseEntity<>(greenhouses, HttpStatus.OK);
+    }
+
+    // Handle exceptions
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 }

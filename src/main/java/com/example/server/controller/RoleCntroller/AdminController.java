@@ -2,15 +2,15 @@ package com.example.server.controller.RoleCntroller;
 
 import com.example.server.model.Roles.Admin;
 import com.example.server.service.RolesServices.AdminService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
-
+@CrossOrigin(origins = "*")
 public class AdminController {
 
     private final AdminService adminService;
@@ -38,10 +38,16 @@ public class AdminController {
         return ResponseEntity.ok(admin);
     }
 
-    @PutMapping("/admin-update/{id}")
+    @PutMapping("/admin/admin-update/{id}")
     public ResponseEntity<Admin> updateAdmin(@PathVariable String id, @RequestBody Admin adminDetails) {
         Admin updatedAdmin = adminService.updateAdmin(id, adminDetails);
         return ResponseEntity.ok(updatedAdmin);
+    }
+
+    @PutMapping("/admin/update-password/{id}")
+    public ResponseEntity<Void> updatePassword(@PathVariable String id, @RequestBody Map<String, String> passwordData) {
+        adminService.updatePassword(id, passwordData.get("currentPassword"), passwordData.get("newPassword"));
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/admin/deletea/{id}")

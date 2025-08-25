@@ -35,36 +35,67 @@ public class FarmerService {
             .orElseThrow(() -> new RuntimeException("Farmer not found with id: " + id));
     }
 
-    // UPDATE
+    // UPDATE - Fixed to prevent username/password overwrite and handle Double type
     public Farmer updateFarmer(String id, Farmer farmerDetails) {
         Farmer farmer = getFarmerById(id);
         
-       // Update inherited fields from User
-    farmer.setUsername(farmerDetails.getUsername());
-    farmer.setFirstname(farmerDetails.getFirstname());
-    farmer.setLastname(farmerDetails.getLastname());
-    farmer.setEmail(farmerDetails.getEmail());
-    farmer.setPhone(farmerDetails.getPhone());
-    farmer.setStreet(farmerDetails.getStreet());
-    farmer.setCity(farmerDetails.getCity());
-    farmer.setState(farmerDetails.getState());
-    farmer.setZipCode(farmerDetails.getZipCode());
-    farmer.setCountry(farmerDetails.getCountry());
-    farmer.setProfileImageUrl(farmerDetails.getProfileImageUrl());
-    
-    // Update farmer-specific fields
-    farmer.setFarmLocation(farmerDetails.getFarmLocation());
-    farmer.setFarmSize(farmerDetails.getFarmSize());
-    farmer.setGreenhouseIds(farmerDetails.getGreenhouseIds());
-    farmer.setHarvestIds(farmerDetails.getHarvestIds());
-    
-    // Update password if provided
-    if (farmerDetails.getPassword() != null && !farmerDetails.getPassword().isEmpty()) {
-        farmer.setPassword(passwordEncoder.encode(farmerDetails.getPassword()));
+        // Only update fields that are provided (non-null)
+        if (farmerDetails.getFirstname() != null) {
+            farmer.setFirstname(farmerDetails.getFirstname());
+        }
+        if (farmerDetails.getLastname() != null) {
+            farmer.setLastname(farmerDetails.getLastname());
+        }
+        if (farmerDetails.getEmail() != null) {
+            farmer.setEmail(farmerDetails.getEmail());
+        }
+        if (farmerDetails.getPhone() != null) {
+            farmer.setPhone(farmerDetails.getPhone());
+        }
+        if (farmerDetails.getStreet() != null) {
+            farmer.setStreet(farmerDetails.getStreet());
+        }
+        if (farmerDetails.getCity() != null) {
+            farmer.setCity(farmerDetails.getCity());
+        }
+        if (farmerDetails.getState() != null) {
+            farmer.setState(farmerDetails.getState());
+        }
+        if (farmerDetails.getZipCode() != null) {
+            farmer.setZipCode(farmerDetails.getZipCode());
+        }
+        if (farmerDetails.getCountry() != null) {
+            farmer.setCountry(farmerDetails.getCountry());
+        }
+        if (farmerDetails.getProfileImageUrl() != null) {
+            farmer.setProfileImageUrl(farmerDetails.getProfileImageUrl());
+        }
+        
+        // Update farmer-specific fields
+        if (farmerDetails.getFarmLocation() != null) {
+            farmer.setFarmLocation(farmerDetails.getFarmLocation());
+        }
+        if (farmerDetails.getFarmSize() != null) {
+            farmer.setFarmSize(farmerDetails.getFarmSize());
+        }
+
+        // Handle greenhouseIds and harvestIds if needed
+        if (farmerDetails.getGreenhouseIds() != null) {
+            farmer.setGreenhouseIds(farmerDetails.getGreenhouseIds());
+        }
+        if (farmerDetails.getHarvestIds() != null) {
+            farmer.setHarvestIds(farmerDetails.getHarvestIds());
+        }
+
+        // Only update password if provided and not empty
+        if (farmerDetails.getPassword() != null && !farmerDetails.getPassword().isEmpty()) {
+            farmer.setPassword(passwordEncoder.encode(farmerDetails.getPassword()));
+        }
+        
+        // Note: We're intentionally NOT updating username to prevent it from being set to null
+        
+        return farmerRepository.save(farmer);
     }
-    
-    return farmerRepository.save(farmer);
-}
 
     // DELETE
     public void deleteFarmer(String id) {

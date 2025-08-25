@@ -13,9 +13,6 @@ public interface HarvestListingRepository extends MongoRepository<Harvest, Strin
     // Find all harvests by farmerId
     List<Harvest> findByFarmerId(String farmerId);
 
-    // Find all harvests by greenhouseId
-    List<Harvest> findByGreenhouseId(String greenhouseId);
-
     // Find harvests by product name (case-insensitive)
     List<Harvest> findByProductNameContainingIgnoreCase(String productName);
 
@@ -34,8 +31,13 @@ public interface HarvestListingRepository extends MongoRepository<Harvest, Strin
     // Find harvests that haven't expired yet (expiryDate is after current date)
     List<Harvest> findByExpiryDateAfter(LocalDate currentDate);
 
-
     // Find harvests by multiple criteria (example: organic and within price range)
     List<Harvest> findByOrganicStatusAndPricePerUnitBetween(
             Harvest.OrganicStatus organicStatus, double minPrice, double maxPrice);
+   
+    // This will find and delete all documents where the expiryDate is before the given date.
+    long deleteByExpiryDateBefore(LocalDate date);
+    // Used to alert the farmer about products expiring soon.
+    List<Harvest> findByFarmerIdAndExpiryDateBetween(String farmerId, LocalDate start, LocalDate end);
 }
+

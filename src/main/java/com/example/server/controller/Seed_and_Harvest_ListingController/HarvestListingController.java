@@ -12,7 +12,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/harvests")
 public class HarvestListingController {
 
     private final HarvestService harvestService;
@@ -22,7 +21,7 @@ public class HarvestListingController {
         this.harvestService = harvestService;
     }
 
-    @GetMapping
+    @GetMapping("auth/allproducts")
     public ResponseEntity<List<Harvest>> getAllHarvests() {
         return ResponseEntity.ok(harvestService.getAllHarvests());
     }
@@ -39,12 +38,7 @@ public class HarvestListingController {
         return ResponseEntity.ok(harvestService.getHarvestsByFarmerId(farmerId));
     }
 
-    @GetMapping("/greenhouse/{greenhouseId}")
-    public ResponseEntity<List<Harvest>> getHarvestsByGreenhouseId(@PathVariable String greenhouseId) {
-        return ResponseEntity.ok(harvestService.getHarvestsByGreenhouseId(greenhouseId));
-    }
-
-    @GetMapping("/search")
+    @GetMapping("/search/productname")
     public ResponseEntity<List<Harvest>> searchHarvestsByProductName(
             @RequestParam String productName) {
         return ResponseEntity.ok(harvestService.searchHarvestsByProductName(productName));
@@ -64,12 +58,12 @@ public class HarvestListingController {
 
     @GetMapping("/price-range")
     public ResponseEntity<List<Harvest>> getHarvestsInPriceRange(
-            @RequestParam double minPrice, 
+            @RequestParam double minPrice,
             @RequestParam double maxPrice) {
         return ResponseEntity.ok(harvestService.getHarvestsInPriceRange(minPrice, maxPrice));
     }
 
-    @GetMapping("/recent")
+    @GetMapping("/recent/products")
     public ResponseEntity<List<Harvest>> getRecentHarvests(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         return ResponseEntity.ok(harvestService.getRecentHarvests(date));
@@ -81,7 +75,7 @@ public class HarvestListingController {
         return ResponseEntity.ok(harvestService.getNonExpiredHarvests(currentDate));
     }
 
-    @GetMapping("/organic-price-range")
+    @GetMapping("/auth/organic-price-range")
     public ResponseEntity<List<Harvest>> getOrganicHarvestsInPriceRange(
             @RequestParam Harvest.OrganicStatus status,
             @RequestParam double minPrice,
@@ -90,20 +84,31 @@ public class HarvestListingController {
                 status, minPrice, maxPrice));
     }
 
-    @PostMapping
+    @PostMapping("/farmer/listharvest")
     public ResponseEntity<Harvest> createHarvest(@RequestBody Harvest harvest) {
         return ResponseEntity.ok(harvestService.createHarvest(harvest));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/farmer/updateharvest/{id}")
     public ResponseEntity<Harvest> updateHarvest(
             @PathVariable String id, @RequestBody Harvest updatedHarvest) {
         return ResponseEntity.ok(harvestService.updateHarvest(id, updatedHarvest));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/auth/delete/{id}")
     public ResponseEntity<Void> deleteHarvest(@PathVariable String id) {
         harvestService.deleteHarvest(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // --- NEW ENDPOINT ADDED ---
+    // This endpoint allows the frontend to fetch products for a farmer that are expiring soon.
+    @GetMapping("/farmer/{farmerId}/expiring-soon")
+    public ResponseEntity<List<Harvest>> getExpiringSoonProducts(
+            @PathVariable String farmerId,
+            @RequestParam(defaultValue = "7") int days) { // The frontend can specify the number of days, defaulting to 7.
+        LocalDate today = LocalDate.now();
+        LocalDate futureDate = today.plusDays(days);
+        return ResponseEntity.ok(harvestService.getExpiringSoonProductsForFarmer(farmerId, today, futureDate));
     }
 }

@@ -21,7 +21,7 @@ public class BuyerController {
         return ResponseEntity.ok(buyerService.registerBuyer(buyer));
     }
 
-    @GetMapping("/buyer/allbuyers")
+    @GetMapping("/admin/allbuyers")
     public ResponseEntity<List<Buyer>> getAllBuyers() {
         return ResponseEntity.ok(buyerService.getAllBuyers());
     }

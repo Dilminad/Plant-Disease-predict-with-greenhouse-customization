@@ -37,18 +37,58 @@ public class AdminService {
 
     public Admin updateAdmin(String id, Admin adminDetails) {
         Admin admin = getAdminById(id);
-        
+        if (adminDetails.getUsername() != null && !adminDetails.getUsername().isEmpty()) {
+            admin.setUsername(adminDetails.getUsername());
+        }
+        if (adminDetails.getEmail() != null && !adminDetails.getEmail().isEmpty()) {
+            admin.setEmail(adminDetails.getEmail());
+        }
+        if (adminDetails.getPhone() != null) {
+            admin.setPhone(adminDetails.getPhone());
+        }
+        if (adminDetails.getFirstname() != null) {
+            admin.setFirstname(adminDetails.getFirstname());
+        }
+        if (adminDetails.getLastname() != null) {
+            admin.setLastname(adminDetails.getLastname());
+        }
+        if (adminDetails.getProfileImageUrl() != null) {
+            admin.setProfileImageUrl(adminDetails.getProfileImageUrl());
+        }
+        if (adminDetails.getStreet() != null) {
+            admin.setStreet(adminDetails.getStreet());
+        }
+        if (adminDetails.getCity() != null) {
+            admin.setCity(adminDetails.getCity());
+        }
+        if (adminDetails.getState() != null) {
+            admin.setState(adminDetails.getState());
+        }
+        if (adminDetails.getZipCode() != null) {
+            admin.setZipCode(adminDetails.getZipCode());
+        }
+        if (adminDetails.getCountry() != null) {
+            admin.setCountry(adminDetails.getCountry());
+        }
         if (adminDetails.getDepartment() != null) {
             admin.setDepartment(adminDetails.getDepartment());
         }
         if (adminDetails.getPermissions() != null) {
             admin.setPermissions(adminDetails.getPermissions());
         }
-        if (adminDetails.getPassword() != null && !adminDetails.getPassword().isEmpty()) {
-            admin.setPassword(passwordEncoder.encode(adminDetails.getPassword()));
-        }
-        
         return adminRepository.save(admin);
+    }
+
+    public void updatePassword(String id, String currentPassword, String newPassword) {
+        Admin admin = getAdminById(id);
+        if (!passwordEncoder.matches(currentPassword, admin.getPassword())) {
+            throw new RuntimeException("Current password is incorrect");
+        }
+        if (newPassword == null || newPassword.length() < 8) {
+            throw new RuntimeException("New password must be at least 8 characters long");
+        }
+        admin.setPassword(passwordEncoder.encode(newPassword));
+        adminRepository.save(admin);
     }
 
     public void deleteAdmin(String id) {
