@@ -2,50 +2,69 @@ package com.example.server.controller.GreenhouseControllers;
 
 import com.example.server.model.GreenhouseModels.GreenhouseModel;
 import com.example.server.service.GreenhouseService.GreenhouseService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 
 @RestController
-
 public class GreenhouseController {
 
     @Autowired
     private GreenhouseService greenhouseService;
 
-    // Create a new greenhouse
-   @PostMapping("/admin/addgreenhouse")
-    public ResponseEntity<GreenhouseModel> createGreenhouse(@Valid @RequestBody GreenhouseModel greenhouse) {
-        GreenhouseModel created = greenhouseService.createGreenhouse(greenhouse);
-        return new ResponseEntity<>(created, HttpStatus.CREATED);
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    // Create a new greenhouse with an optional image upload
+    @PostMapping("/admin/addgreenhouse")
+    public ResponseEntity<GreenhouseModel> createGreenhouse(
+            @RequestParam("greenhouse") String greenhouseJson,
+            @RequestParam(value = "file", required = false) MultipartFile file) {
+        try {
+            GreenhouseModel greenhouse = objectMapper.readValue(greenhouseJson, GreenhouseModel.class);
+            GreenhouseModel created = greenhouseService.createGreenhouse(greenhouse, file);
+            return new ResponseEntity<>(created, HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        }
     }
 
     // Get all greenhouses
-    @GetMapping("/allgreenhouses")
+    @GetMapping("/auth/allgreenhouses")
     public ResponseEntity<List<GreenhouseModel>> getAllGreenhouses() {
         List<GreenhouseModel> greenhouses = greenhouseService.getAllGreenhouses();
         return new ResponseEntity<>(greenhouses, HttpStatus.OK);
     }
 
     // Get greenhouse by ID
-    @GetMapping("/greenhouse/{id}")
+    @GetMapping("/auth/greenhouse/{id}")
     public ResponseEntity<GreenhouseModel> getGreenhouseById(@PathVariable String id) {
         Optional<GreenhouseModel> greenhouse = greenhouseService.getGreenhouseById(id);
         return greenhouse.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    // Update a greenhouse
+    // Update a greenhouse with an optional image upload
     @PutMapping("/admin/updategreenhouse/{id}")
-    public ResponseEntity<GreenhouseModel> updateGreenhouse(@PathVariable String id, @Valid @RequestBody GreenhouseModel greenhouse) {
-        GreenhouseModel updated = greenhouseService.updateGreenhouse(id, greenhouse);
-        return new ResponseEntity<>(updated, HttpStatus.OK);
+    public ResponseEntity<GreenhouseModel> updateGreenhouse(
+            @PathVariable String id,
+            @RequestParam("greenhouse") String greenhouseJson,
+            @RequestParam(value = "file", required = false) MultipartFile file) {
+        try {
+            GreenhouseModel greenhouse = objectMapper.readValue(greenhouseJson, GreenhouseModel.class);
+            GreenhouseModel updated = greenhouseService.updateGreenhouse(id, greenhouse, file);
+            return new ResponseEntity<>(updated, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        }
     }
 
     // Delete a greenhouse

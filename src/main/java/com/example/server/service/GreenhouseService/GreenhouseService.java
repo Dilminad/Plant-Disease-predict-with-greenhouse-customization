@@ -2,13 +2,16 @@ package com.example.server.service.GreenhouseService;
 
 import com.example.server.model.GreenhouseModels.GreenhouseModel;
 import com.example.server.repository.GreenhouseRepo.GreenhouseRepository;
+import com.example.server.service.CloudinaryService.CloudinaryService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -17,11 +20,24 @@ public class GreenhouseService {
     @Autowired
     private GreenhouseRepository greenhouseRepository;
 
+    @Autowired
+    private CloudinaryService cloudinaryService;
+
+    private static final String DELIMITER = "|";
+
     // Create a new greenhouse
-    public GreenhouseModel createGreenhouse(GreenhouseModel greenhouse) {
+    public GreenhouseModel createGreenhouse(GreenhouseModel greenhouse, MultipartFile file) {
         if (greenhouse.getBasePrice().compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Base price cannot be negative");
         }
+        
+        if (file != null && !file.isEmpty()) {
+            Map<String, Object> uploadResult = cloudinaryService.uploadFile(file);
+            String url = (String) uploadResult.get("secure_url");
+            String publicId = (String) uploadResult.get("public_id");
+            greenhouse.setImageUrl(url + DELIMITER + publicId);
+        }
+
         greenhouse.setCreatedAt(LocalDateTime.now());
         greenhouse.setUpdatedAt(LocalDateTime.now());
         greenhouse.setActive(true);
@@ -39,12 +55,26 @@ public class GreenhouseService {
     }
 
     // Update a greenhouse
-    public GreenhouseModel updateGreenhouse(String id, GreenhouseModel updatedGreenhouse) {
-        Optional<GreenhouseModel> existing = greenhouseRepository.findById(id);
-        if (existing.isEmpty()) {
-            throw new IllegalArgumentException("Greenhouse with ID " + id + " not found");
+    public GreenhouseModel updateGreenhouse(String id, GreenhouseModel updatedGreenhouse, MultipartFile file) {
+        GreenhouseModel greenhouse = greenhouseRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Greenhouse with ID " + id + " not found"));
+
+        if (file != null && !file.isEmpty()) {
+            // Delete old image from Cloudinary if it exists
+            if (greenhouse.getImageUrl() != null && !greenhouse.getImageUrl().isEmpty()) {
+                String[] parts = greenhouse.getImageUrl().split("\\" + DELIMITER);
+                if (parts.length > 1) {
+                    cloudinaryService.deleteFile(parts[1]);
+                }
+            }
+            // Upload new image and create the combined string
+            Map<String, Object> uploadResult = cloudinaryService.uploadFile(file);
+            String url = (String) uploadResult.get("secure_url");
+            String publicId = (String) uploadResult.get("public_id");
+            greenhouse.setImageUrl(url + DELIMITER + publicId);
         }
-        GreenhouseModel greenhouse = existing.get();
+
+        // Update other fields
         greenhouse.setName(updatedGreenhouse.getName());
         greenhouse.setDescription(updatedGreenhouse.getDescription());
         greenhouse.setBasePrice(updatedGreenhouse.getBasePrice());
@@ -52,21 +82,28 @@ public class GreenhouseService {
         greenhouse.setIncludedSensors(updatedGreenhouse.getIncludedSensors());
         greenhouse.setIncludedActuators(updatedGreenhouse.getIncludedActuators());
         greenhouse.setWarrantyMonths(updatedGreenhouse.getWarrantyMonths());
-        greenhouse.setImageUrl(updatedGreenhouse.getImageUrl());
         greenhouse.setCompatibleCrops(updatedGreenhouse.getCompatibleCrops());
-        greenhouse.setMaterials(updatedGreenhouse.getMaterials()); // Added
+        greenhouse.setMaterials(updatedGreenhouse.getMaterials());
         greenhouse.setUpdatedAt(LocalDateTime.now());
         return greenhouseRepository.save(greenhouse);
     }
 
     // Delete a greenhouse
     public void deleteGreenhouse(String id) {
-        if (!greenhouseRepository.existsById(id)) {
-            throw new IllegalArgumentException("Greenhouse with ID " + id + " not found");
+        GreenhouseModel greenhouse = greenhouseRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Greenhouse with ID " + id + " not found"));
+
+        // Parse imageUrl and delete from Cloudinary if public_id exists
+        if (greenhouse.getImageUrl() != null && !greenhouse.getImageUrl().isEmpty()) {
+            String[] parts = greenhouse.getImageUrl().split("\\" + DELIMITER);
+            if (parts.length > 1) {
+                cloudinaryService.deleteFile(parts[1]);
+            }
         }
+
         greenhouseRepository.deleteById(id);
     }
-
+    
     // Search by name
     public List<GreenhouseModel> searchByName(String name) {
         return greenhouseRepository.findByNameContainingIgnoreCase(name);

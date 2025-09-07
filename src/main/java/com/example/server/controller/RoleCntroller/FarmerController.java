@@ -2,13 +2,15 @@ package com.example.server.controller.RoleCntroller;
 
 import com.example.server.model.Roles.Farmer;
 import com.example.server.service.RolesServices.FarmerService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Optional;
+import org.springframework.security.core.Authentication;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -27,18 +29,24 @@ public class FarmerController {
         return ResponseEntity.ok(farmerService.getAllFarmers());
     }
 
-    @GetMapping("/getfarmer/{id}")
+    @GetMapping("/auth/farmers/{id}")
     public ResponseEntity<Farmer> getFarmerById(@PathVariable String id) {
-        return ResponseEntity.ok(farmerService.getFarmerById(id));
+        try {
+            Farmer farmer = farmerService.getFarmerById(id);
+            return ResponseEntity.ok(farmer);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
-@PostMapping("/farmer/update/{id}")
-public ResponseEntity<Farmer> updateFarmer(@PathVariable String id, 
-                                         @RequestBody Farmer farmerDetails,
-                                         Principal principal) {
-    // Add authentication check - ensure the user is updating their own profile
-    Farmer updatedFarmer = farmerService.updateFarmer(id, farmerDetails);
-    return ResponseEntity.ok(updatedFarmer);
-}
+
+    @PostMapping("/farmer/update/{id}")
+    public ResponseEntity<Farmer> updateFarmer(@PathVariable String id, 
+                                             @RequestBody Farmer farmerDetails,
+                                             Principal principal) {
+        // Add authentication check - ensure the user is updating their own profile
+        Farmer updatedFarmer = farmerService.updateFarmer(id, farmerDetails);
+        return ResponseEntity.ok(updatedFarmer);
+    }
 
     @GetMapping("/location/{location}")
     public ResponseEntity<List<Farmer>> getFarmersByLocation(@PathVariable String location) {
@@ -57,4 +65,19 @@ public ResponseEntity<Farmer> updateFarmer(@PathVariable String id,
         farmerService.deleteFarmer(id);
         return ResponseEntity.noContent().build();
     }
+    
+    // *** THIS IS THE ONLY CHANGE ***
+    // The URL is now explicitly set to match the frontend request.
+    @GetMapping("/auth/farmers/current-farmer")
+    public ResponseEntity<Farmer> getCurrentFarmer() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return ResponseEntity.status(401).build();
+        }
+        String username = auth.getName();
+        Optional<Farmer> farmer = farmerService.findByUsername(username);
+        return farmer.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.status(403).build());
+    }
 }
+
+

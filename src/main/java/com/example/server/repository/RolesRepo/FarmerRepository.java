@@ -16,6 +16,8 @@ public interface FarmerRepository extends MongoRepository <Farmer , String> {
     List<Farmer> findByGreenhouseIdsContaining(String greenhouseId);
      Optional<Farmer> findByUsername(String username);
     boolean existsByEmail(String email);
+        Optional<Farmer> findById(String id);
+
     
     // Removed findByFarmerId as it's not needed (using the inherited id field)
 }

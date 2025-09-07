@@ -2,7 +2,7 @@ package com.example.server.controller.RoleCntroller;
 
 import com.example.server.model.Roles.Admin;
 import com.example.server.service.RolesServices.AdminService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Autowired;  
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

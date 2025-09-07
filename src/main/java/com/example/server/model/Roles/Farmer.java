@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @Document(collection = "farmers")
 public class Farmer extends User {
     private String farmLocation;
-    private Double farmSize; // Changed from double to Double
+    private Double farmSize; 
     private List<String> greenhouseIds;
     private List<String> harvestIds;
 

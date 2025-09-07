@@ -30,7 +30,20 @@ public class SeedListing {
     private LocalDate listingDate;
     private double sellerRating;
     
+    // ++ ADDED THESE NEW FIELDS FOR ACCURACY ++
+    private SunRequirement sunRequirement;
+    private WaterRequirement waterRequirement;
+
     public enum SeedCategory {
         VEGETABLE, FRUIT, GRAIN, HERB, FLOWER
+    }
+    
+    // ++ ADDED THESE NEW ENUMS ++
+    public enum SunRequirement {
+        FULL_SUN, PARTIAL_SHADE, FULL_SHADE
+    }
+
+    public enum WaterRequirement {
+        LOW, MODERATE, HIGH
     }
 }

@@ -31,10 +31,10 @@ public class BuyerController {
         return ResponseEntity.ok(buyerService.getBuyerById(id));
     }
 
-    @PutMapping("/buyer/{id}")
-    public ResponseEntity<Buyer> updateBuyerProfile(@PathVariable String id, @RequestBody Buyer buyerDetails) {
-        return ResponseEntity.ok(buyerService.updateBuyerProfile(id, buyerDetails));
-    }
+  @PutMapping("/buyer/{id}")
+public ResponseEntity<Buyer> updateBuyerProfile(@PathVariable String id, @RequestBody Buyer buyerDetails) {
+    return ResponseEntity.ok(buyerService.updateBuyerProfile(id, buyerDetails));
+}
 
     @PostMapping("/{buyerId}/favorites/{farmerId}")
     public ResponseEntity<Buyer> addFavoriteFarmer(
@@ -72,4 +72,5 @@ public class BuyerController {
         buyerService.deleteBuyer(id);
         return ResponseEntity.noContent().build();
     }
+
 }

@@ -57,12 +57,28 @@ public class SeedListingService {
                     existingListing.setGerminationRate(updatedSeedListing.getGerminationRate());
                     existingListing.setDaysToMaturity(updatedSeedListing.getDaysToMaturity());
                     existingListing.setSellerRating(updatedSeedListing.getSellerRating());
+                    existingListing.setSunRequirement(updatedSeedListing.getSunRequirement());
+                    existingListing.setWaterRequirement(updatedSeedListing.getWaterRequirement());
                     return seedListingRepository.save(existingListing);
                 })
                 .orElseGet(() -> {
                     updatedSeedListing.setId(id);
                     return seedListingRepository.save(updatedSeedListing);
                 });
+    }
+    
+    // ++ ADD METHOD TO UPDATE STOCK QUANTITY ++
+    public SeedListing updateStockQuantity(String id, int quantityChange) {
+        return seedListingRepository.findById(id)
+                .map(existingListing -> {
+                    int newStock = existingListing.getAvailableQuantity() + quantityChange;
+                    if (newStock < 0) {
+                        throw new IllegalStateException("Insufficient stock for product: " + existingListing.getName());
+                    }
+                    existingListing.setAvailableQuantity(newStock);
+                    return seedListingRepository.save(existingListing);
+                })
+                .orElseThrow(() -> new RuntimeException("Product not found with ID: " + id));
     }
 
     public void deleteSeedListing(String id) {

@@ -22,11 +22,11 @@ public class HarvestListingController {
     }
 
     @GetMapping("auth/allproducts")
-    public ResponseEntity<List<Harvest>> getAllHarvests() {
-        return ResponseEntity.ok(harvestService.getAllHarvests());
+    public ResponseEntity<List<Harvest>> getAllAvailableHarvests() {
+        return ResponseEntity.ok(harvestService.getAllAvailableHarvests());
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("auth/{id}")
     public ResponseEntity<Harvest> getHarvestById(@PathVariable String id) {
         return harvestService.getHarvestById(id)
                 .map(ResponseEntity::ok)
@@ -100,13 +100,11 @@ public class HarvestListingController {
         harvestService.deleteHarvest(id);
         return ResponseEntity.noContent().build();
     }
-
-    // --- NEW ENDPOINT ADDED ---
-    // This endpoint allows the frontend to fetch products for a farmer that are expiring soon.
+    
     @GetMapping("/farmer/{farmerId}/expiring-soon")
     public ResponseEntity<List<Harvest>> getExpiringSoonProducts(
             @PathVariable String farmerId,
-            @RequestParam(defaultValue = "7") int days) { // The frontend can specify the number of days, defaulting to 7.
+            @RequestParam(defaultValue = "7") int days) { 
         LocalDate today = LocalDate.now();
         LocalDate futureDate = today.plusDays(days);
         return ResponseEntity.ok(harvestService.getExpiringSoonProductsForFarmer(farmerId, today, futureDate));

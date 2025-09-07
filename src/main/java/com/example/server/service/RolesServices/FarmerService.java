@@ -7,6 +7,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class FarmerService {
@@ -35,7 +36,12 @@ public class FarmerService {
             .orElseThrow(() -> new RuntimeException("Farmer not found with id: " + id));
     }
 
-    // UPDATE - Fixed to prevent username/password overwrite and handle Double type
+    // Added method to find farmer by username
+    public Optional<Farmer> findByUsername(String username) {
+        return farmerRepository.findByUsername(username);
+    }
+
+    // UPDATE - FIXED to properly handle greenhouseIds
     public Farmer updateFarmer(String id, Farmer farmerDetails) {
         Farmer farmer = getFarmerById(id);
         
@@ -79,7 +85,7 @@ public class FarmerService {
             farmer.setFarmSize(farmerDetails.getFarmSize());
         }
 
-        // Handle greenhouseIds and harvestIds if needed
+        // Handle greenhouseIds - FIXED: Only update if provided, don't overwrite with null
         if (farmerDetails.getGreenhouseIds() != null) {
             farmer.setGreenhouseIds(farmerDetails.getGreenhouseIds());
         }
@@ -92,9 +98,25 @@ public class FarmerService {
             farmer.setPassword(passwordEncoder.encode(farmerDetails.getPassword()));
         }
         
-        // Note: We're intentionally NOT updating username to prevent it from being set to null
-        
         return farmerRepository.save(farmer);
+    }
+
+    // NEW METHOD: Add greenhouse to farmer
+    public Farmer addGreenhouseToFarmer(String farmerId, String greenhouseId) {
+        Farmer farmer = getFarmerById(farmerId);
+        List<String> greenhouseIds = farmer.getGreenhouseIds();
+        
+        if (greenhouseIds == null) {
+            greenhouseIds = new java.util.ArrayList<>();
+            farmer.setGreenhouseIds(greenhouseIds);
+        }
+        
+        if (!greenhouseIds.contains(greenhouseId)) {
+            greenhouseIds.add(greenhouseId);
+            return farmerRepository.save(farmer);
+        }
+        
+        return farmer; // Greenhouse already exists
     }
 
     // DELETE

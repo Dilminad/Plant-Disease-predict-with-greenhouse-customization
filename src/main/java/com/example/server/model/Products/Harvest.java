@@ -23,7 +23,6 @@ public class Harvest {
     private String productName;
     private String description;
     private double quantityAvailable;
-    private String unit;
     private double pricePerUnit;
     private LocalDate harvestDate;
     private LocalDate expiryDate;

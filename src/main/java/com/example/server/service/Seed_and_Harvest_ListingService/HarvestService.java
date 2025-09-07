@@ -19,8 +19,8 @@ public class HarvestService {
         this.harvestListingRepository = harvestListingRepository;
     }
 
-    public List<Harvest> getAllHarvests() {
-        return harvestListingRepository.findAll();
+    public List<Harvest> getAllAvailableHarvests() {
+        return harvestListingRepository.findAllAvailable(LocalDate.now());
     }
 
     public Optional<Harvest> getHarvestById(String id) {
@@ -40,7 +40,7 @@ public class HarvestService {
     }
 
     public List<Harvest> getHarvestsWithMinQuantity(double quantity) {
-        return harvestListingRepository.findByQuantityAvailableGreaterThan(quantity);
+        return harvestListingRepository.findByQuantityAvailableGreaterThanEqual(quantity);
     }
 
     public List<Harvest> getHarvestsInPriceRange(double minPrice, double maxPrice) {
@@ -62,7 +62,6 @@ public class HarvestService {
     }
 
     public Harvest createHarvest(Harvest harvest) {
-        // You might want to add validation here
         return harvestListingRepository.save(harvest);
     }
 
@@ -73,7 +72,6 @@ public class HarvestService {
                     existingHarvest.setProductName(updatedHarvest.getProductName());
                     existingHarvest.setDescription(updatedHarvest.getDescription());
                     existingHarvest.setQuantityAvailable(updatedHarvest.getQuantityAvailable());
-                    existingHarvest.setUnit(updatedHarvest.getUnit());
                     existingHarvest.setPricePerUnit(updatedHarvest.getPricePerUnit());
                     existingHarvest.setHarvestDate(updatedHarvest.getHarvestDate());
                     existingHarvest.setExpiryDate(updatedHarvest.getExpiryDate());
@@ -92,8 +90,6 @@ public class HarvestService {
         harvestListingRepository.deleteById(id);
     }
 
-    // --- NEW METHOD ADDED ---
-    // This method retrieves products for a specific farmer that are expiring within a given date range.
     public List<Harvest> getExpiringSoonProductsForFarmer(String farmerId, LocalDate start, LocalDate end) {
         return harvestListingRepository.findByFarmerIdAndExpiryDateBetween(farmerId, start, end);
     }

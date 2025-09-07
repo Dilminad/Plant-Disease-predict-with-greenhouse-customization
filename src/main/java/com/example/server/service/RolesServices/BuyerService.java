@@ -7,6 +7,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class BuyerService {
@@ -39,20 +40,26 @@ public class BuyerService {
 
     // UPDATE
     public Buyer updateBuyerProfile(String id, Buyer buyerDetails) {
-        Buyer buyer = getBuyerById(id);
-        
-        // Update only allowed profile fields
-        buyer.setPhone(buyerDetails.getPhone());
-        buyer.setStreet(buyerDetails.getStreet());
-        buyer.setCity(buyerDetails.getCity());
-        
-        // Update password if provided
-        if (buyerDetails.getPassword() != null && !buyerDetails.getPassword().isEmpty()) {
-            buyer.setPassword(passwordEncoder.encode(buyerDetails.getPassword()));
-        }
-        
-        return buyerRepository.save(buyer);
+    Buyer buyer = getBuyerById(id);
+    
+    // Update all profile fields
+    buyer.setFirstname(buyerDetails.getFirstname());
+    buyer.setLastname(buyerDetails.getLastname());
+    buyer.setEmail(buyerDetails.getEmail());
+    buyer.setPhone(buyerDetails.getPhone());
+    buyer.setStreet(buyerDetails.getStreet());
+    buyer.setCity(buyerDetails.getCity());
+    buyer.setState(buyerDetails.getState());
+    buyer.setZipCode(buyerDetails.getZipCode());
+    buyer.setCountry(buyerDetails.getCountry());
+    
+    // Update password if provided
+    if (buyerDetails.getPassword() != null && !buyerDetails.getPassword().isEmpty()) {
+        buyer.setPassword(passwordEncoder.encode(buyerDetails.getPassword()));
     }
+    
+    return buyerRepository.save(buyer);
+}
 
     // FAVORITES MANAGEMENT
     public Buyer addFavoriteFarmer(String buyerId, String farmerId) {
@@ -95,4 +102,7 @@ public class BuyerService {
                 .filter(b -> b.getOrderHistory() != null && b.getOrderHistory().size() >= minimumOrders)
                 .toList();
     }
+    public Optional<Buyer> findByUsername(String username) {
+    return buyerRepository.findByUsername(username);
+}
 }

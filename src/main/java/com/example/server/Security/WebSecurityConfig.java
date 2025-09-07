@@ -105,6 +105,7 @@ public class WebSecurityConfig {
                 // Permit all requests to WebSocket endpoints
                 .requestMatchers("/ws/**").permitAll()
                 // Require authentication for any other request
+                .requestMatchers("/api/classify").permitAll()
                 .anyRequest().authenticated()
             );
 

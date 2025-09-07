@@ -21,8 +21,7 @@ public class PlatformSettings {
     
     private double platformFeePercentage;    // Percentage-based fee (e.g., 5.0 for 5%)
     private double fixedPlatformFee;         // Fixed amount fee (e.g., 2.50 for $2.50)
-    private double minimumPlatformFee;       // Minimum fee amount
-    private double maximumPlatformFee;       // Maximum fee amount
+    
     private String feeCalculationMethod;     // "PERCENTAGE" or "FIXED"
     private String lastModifiedBy;
     private LocalDateTime lastModifiedDate = LocalDateTime.now();
